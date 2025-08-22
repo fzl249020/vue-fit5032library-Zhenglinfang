@@ -24,67 +24,6 @@
     </div>
 </template> -->
 
-<!-- <template>
-  <div class="container mt-8">
-    <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <h1 class="text-center">User Information Form</h1>
-        <form>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="username" class="form-label">Username</label>
-              <input type="text" class="form-control" id="username">
-            </div>
-            <div class="col-md-6">
-              <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="password">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <div class="form-check">
-                <input type="checkbox">
-                <label>Australian Resident?</label>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label for="gender" class="form-label">Gender</label>
-              <select class="form-select" id="gender">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="reason" class="form-label">Reason for joining</label>
-            <textarea class="form-control" id="reason" rows="3"></textarea>
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2">Submit</button>
-            <button type="button" class="btn btn-secondary">Clear</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-    <div class="row mt-5" v-if="submittedCards.length">
-   <div class="d-flex flex-wrap justify-content-start">
-      <div v-for="(card, index) in submittedCards" :key="index" class="card m-2" style="width: 18rem;">
-         <div class="card-header">
-            User Information
-         </div>
-         <ul class="list-group list-group-flush">
-            <li class="list-group-item">Username: {{ card.username }}</li>
-            <li class="list-group-item">Password: {{ card.password }}</li>
-            <li class="list-group-item">Australian Resident: {{ card.isAustralian ? 'Yes' : 'No' }}</li>
-            <li class="list-group-item">Gender: {{ card.gender }}</li>
-            <li class="list-group-item">Reason: {{ card.reason }}</li>
-         </ul>
-      </div>
-   </div>
-</div>
-</template> -->
 <!-- ------------------------------------------------------------------ -->
 <!-- <template>
   <div class="container py-4">
@@ -194,43 +133,40 @@ const submitForm = () => {
 </style>
  -->
 
-
 <template>
   <div class="container py-4">
     <h1 class="text-center mb-4">User Information Form</h1>
 
-    <!-- 表单 -->
     <div class="row justify-content-center mb-4">
       <div class="col-12 col-lg-10">
-        <form @submit.prevent="submitForm" novalidate>
+        <form @submit.prevent="submitForm" ref="formEl">
           <div class="row g-3">
+            <!-- Username -->
             <div class="col-12 col-md-6">
               <label for="username" class="form-label">Username</label>
               <input
                 type="text"
                 class="form-control"
                 id="username"
-                v-model.trim="formData.username"
+                v-model="formData.username"
                 required
-                autocomplete="username"
-                placeholder="Enter your username"
               />
             </div>
 
+            <!-- Password -->
             <div class="col-12 col-md-6">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
                 class="form-control"
                 id="password"
+                minlength="4"
+                maxlength="10"
                 v-model="formData.password"
-                required
-                autocomplete="new-password"
-                placeholder="Enter a strong password"
-                minlength="6"
               />
             </div>
 
+            <!-- Australian Resident -->
             <div class="col-12 col-md-6 d-flex align-items-center">
               <div class="form-check mt-2 mt-md-4">
                 <input
@@ -245,6 +181,7 @@ const submitForm = () => {
               </div>
             </div>
 
+            <!-- Gender -->
             <div class="col-12 col-md-6">
               <label for="gender" class="form-label">Gender</label>
               <select
@@ -261,6 +198,7 @@ const submitForm = () => {
               </select>
             </div>
 
+            <!-- Reason -->
             <div class="col-12">
               <label for="reason" class="form-label">Reason for joining</label>
               <textarea
@@ -272,6 +210,7 @@ const submitForm = () => {
               ></textarea>
             </div>
 
+            <!-- Buttons -->
             <div class="col-12 d-flex flex-column flex-md-row justify-content-center gap-2">
               <button type="submit" class="btn btn-primary w-100 w-md-auto">Submit</button>
               <button type="button" class="btn btn-secondary w-100 w-md-auto" @click="clearForm">
@@ -283,8 +222,9 @@ const submitForm = () => {
       </div>
     </div>
 
+    <!-- 你原来的卡片展示（保留） -->
     <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-4" v-if="submittedCards.length">
-      <div class="col" v-for="(card, index) in submittedCards" :key="index">
+      <div class="col" v-for="(card, index) in submittedCards" :key="card.id ?? index">
         <div class="card h-100">
           <div class="card-header">User Information</div>
           <ul class="list-group list-group-flush">
@@ -299,11 +239,38 @@ const submitForm = () => {
         </div>
       </div>
     </div>
+
+    <!-- 新增：PrimeVue DataTable 展示（Activity 4 要求） -->
+    <div class="row mt-4" v-if="submittedCards.length">
+      <div class="col-12">
+        <DataTable
+          :value="submittedCards"
+          dataKey="id"
+          paginator
+          :rows="5"
+          :rowsPerPageOptions="[5,10,20]"
+          tableStyle="min-width: 60rem"
+          class="mb-4"
+        >
+          <Column field="username" header="Username" sortable />
+          <Column field="password" header="Password" />
+          <Column header="Australian Resident" :body="row => (row.isAustralian ? 'Yes' : 'No')" sortable />
+          <Column field="gender" header="Gender" sortable />
+          <Column field="reason" header="Reason" />
+        </DataTable>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+
+/* 新增：按需引入 PrimeVue DataTable 组件 */
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+
+const formEl = ref(null);
 
 const formData = ref({
   username: '',
@@ -314,9 +281,19 @@ const formData = ref({
 });
 
 const submittedCards = ref([]);
+let uid = 1; // 新增：为 DataTable 提供稳定的 dataKey
 
 const submitForm = () => {
-  submittedCards.value.unshift({ ...formData.value });
+  if (!formEl.value.checkValidity()) {
+    formEl.value.reportValidity();
+    return;
+  }
+
+  submittedCards.value.unshift({
+    id: uid++,            // 新增：唯一 ID
+    ...formData.value
+  });
+
   clearForm();
 };
 
@@ -349,7 +326,6 @@ const clearForm = () => {
   padding: 10px;
 }
 
-
 @media (min-width: 992px) {
   .list-group-item {
     padding: 12px 14px;
@@ -357,3 +333,6 @@ const clearForm = () => {
   }
 }
 </style>
+
+
+
